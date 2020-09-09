@@ -95,19 +95,18 @@ function read_animation(path)
             local time_accessor = accessors[sampler.input + 1]
             local time, transform = read_accessor(time_accessor), read_accessor(accessors[sampler.output + 1])
             local min_time, max_time = time_accessor.min and time_accessor.min[1] or modlib.table.min(time), time_accessor.max and time_accessor.max[1] or modlib.table.max(time)
-            local animation = {
+            local nodename = nodes[node].name
+            animations_by_nodename[nodename] = animations_by_nodename[nodename] or {}
+            assert(not animations_by_nodename[nodename][path])
+            animations_by_nodename[nodename][path] = {
                 start_time = min_time,
                 end_time = max_time,
                 keyframes = time,
                 values = transform
             }
-            local nodename = nodes[node].name
-            animations_by_nodename[nodename] = animations_by_nodename[nodename] or {}
-            table.insert(animations_by_nodename[nodename], animation)
         end
     end
     -- HACK to remove the unneeded Camera animation
     animations_by_nodename.Camera = nil
-    modlib.file.write(modlib.mod.get_resource("player_animations.lua"), minetest.serialize(animations_by_nodename))
     return animations_by_nodename
 end
