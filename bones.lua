@@ -1,3 +1,5 @@
+local BinaryStream = require("binarystream")
+
 -- helper function
 local function quaternion_to_rotation(q)
     local rotation = {}
@@ -45,78 +47,26 @@ function read_animation(path)
     end
     local accessors = gltf.accessors
     local function read_accessor(accessor)
-        local component_bytes = {
-            [5120] = 1,
-            [5121] = 1,
-            [5122] = 2,
-            [5123] = 2,
-            [5125] = 4,
-            [5126] = 4
-        }
-        local offset, buffer
-        local component_readers = {
-            [5120] = function()
-                local value = buffer:byte(offset)
-                if value >= 128 then
-                    value = -value + 127
-                end
-                offset = offset + 1
-                return value
-            end,
-            [5121] = function()
-                return buffer:byte(offset)
-            end,
-            [5122] = function()
-                local value = buffer:byte(offset) * 256 + buffer:byte(offset + 1)
-                if value >= 128 * 256 then
-                    value = -value + 128 * 256 - 1
-                end
-                return value
-            end,
-            [5123] = function()
-                return buffer:byte(offset) * 256 + buffer:byte(offset + 1)
-            end,
-            [5125] = function()
-                return ((buffer:byte(offset) * 256 + buffer:byte(offset + 1)) * 256 + buffer:byte(offset + 2)) * 256 + buffer:byte(offset + 3)
-            end,
-            [5126] = function()
-                local byte_1, byte_2, byte_3, byte_4 = buffer:byte(offset), buffer:byte(offset + 1), buffer:byte(offset + 2), buffer:byte(offset + 3)
-                local sign = 1
-                if byte_1 >= 128 then
-                    sign = -1
-                    byte_1 = byte_1 - 128
-                end
-                local exponent = byte_1 * 2 - 127
-                if byte_2 >= 128 then
-                    exponent = exponent + 1
-                    byte_2 = byte_2 - 128
-                end
-                assert(exponent ~= 256) -- glTF does not allow infinities & NaN
-                local fraction = (byte_2 + ((byte_3 + (byte_4 / 256)) / 256)) / 256
-                if exponent == 0 then
-                    exponent = -126
-                else
-                    fraction = fraction + 1
-                end
-                return sign * fraction * math.pow(2, exponent)
-                -- TODO math.fround (double vs float), smol precision errors are to be expected
-            end
-        }
-
-        -- float reader test
-        --[[local float_reader = component_readers[5126]
-        offset = 1
-        -- 0x3f000000
-        buffer = string.char(0x3f) .. string.char(0) .. string.char(0) .. string.char(0)
-        local value = float_reader()
-        assert(value == 0.5, value)]]
-
-        local component_reader = component_readers[accessor.componentType]
-        local accessor_type = accessor.type
         local buffer_view = gltf.bufferViews[accessor.bufferView + 1]
         buffer = buffers[buffer_view.buffer + 1]
-        offset = buffer_view.byteOffset + 1
-        local value_bytes = component_bytes[accessor.componentType] * ({SCALAR = 1, VEC3 = 3, VEC4 = 4})[accessor_type]
+        local binary_stream = BinaryStream(buffer, buffer:len())
+        local component_readers = {
+            [5120] = "readS8",
+            [5121] = "readU8",
+            [5122] = "readS16",
+            [5123] = "readU16",
+            [5125] = "readU32",
+            [5126] = "readF32"
+        }
+        for key, value in pairs(component_readers) do
+            local reader = binary_stream[value]
+            component_readers[key] = function()
+                return reader(binary_stream)
+            end
+        end
+        local accessor_type = accessor.type
+        local component_reader = component_readers[accessor.componentType]
+        binary_stream:skip(buffer_view.byteOffset)
         local values = {}
         for index = 1, accessor.count do
             if accessor_type == "SCALAR" then
@@ -131,7 +81,6 @@ function read_animation(path)
                 end
                 values[index] = vector
             end
-            offset = offset + value_bytes
         end
         return values
     end
@@ -162,6 +111,3 @@ function read_animation(path)
     modlib.file.write(modlib.mod.get_resource("player_animations.lua"), minetest.serialize(animations_by_nodename))
     return animations_by_nodename
 end
-
--- example call:
--- bone_data(minetest.get_modpath("this_mod").."/models/model.gltf", {Head = true})
