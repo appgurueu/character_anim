@@ -29,6 +29,9 @@ local model = {
 	}
 }
 conf = modlib.conf.import(minetest.get_current_modname(), {
-	default = model,
-	models = { type = "table", keys = { type = "string" }, values = model }
+    type = "table",
+    children = {
+	    default = model,
+        models = { type = "table", keys = { type = "string" }, values = model }
+    }
 })

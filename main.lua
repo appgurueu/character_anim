@@ -111,7 +111,7 @@ local function handle_player_animations(dtime, player)
 	if not modeldata then
 		return
 	end
-	local conf = conf.models[mesh] or conf
+	local conf = conf.models[mesh] or conf.default
 	local name = player:get_player_name()
 	local range, frame_speed, frame_blend, frame_loop = player:get_animation()
 	disable_animation(player)
