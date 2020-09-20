@@ -6,6 +6,10 @@ Animates the character. Resembles [`playeranim`](https://github.com/minetest-mod
 
 Depends on [`modlib`](https://github.com/appgurueu/modlib) and [`cmdlib`](https://github.com/appgurueu/cmdlib). Code written by Lars Mueller aka LMD or appguru(eu) and licensed under the MIT license.
 
+## Screenshot
+
+[Image](screenshot.png)
+
 ## Links
 
 * [GitHub](https://github.com/appgurueu/character_anim) - sources, issue tracking, contributing
