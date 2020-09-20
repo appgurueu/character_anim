@@ -14,7 +14,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib) and [`cmdlib`](https:
 
 * [GitHub](https://github.com/appgurueu/character_anim) - sources, issue tracking, contributing
 * [Discord](https://discordapp.com/invite/ysP74by) - discussion, chatting
-* [Minetest Forum](https://forum.minetest.net/viewtopic.php?f=9&t=24945) - (more organized) discussion <!-- TODO -->
+* [Minetest Forum](https://forum.minetest.net/viewtopic.php?f=9&t=25385) - (more organized) discussion
 * [ContentDB](https://content.minetest.net/packages/LMD/character_anim) - releases (cloning from GitHub is recommended)
 
 # Features
