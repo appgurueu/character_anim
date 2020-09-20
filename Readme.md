@@ -8,7 +8,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib) and [`cmdlib`](https:
 
 ## Screenshot
 
-[Image](screenshot.png)
+![Image](screenshot.png)
 
 ## Links
 
