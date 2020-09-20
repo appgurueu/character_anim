@@ -89,7 +89,7 @@ local function normalize_rotation(euler_rotation)
 	return vector.apply(euler_rotation, function(x) return (x % 360) - 180 end)
 end
 
-local conf = {
+--[[local conf = {
 	body = {
 		turn_speed = 1/5
 	},
@@ -104,12 +104,14 @@ local conf = {
 		speed = 1000,
 		yaw = {-30, 160}
 	}
-}
+}]]
 local function handle_player_animations(dtime, player)
-	local modeldata = modeldata[player:get_properties().mesh]
+	local mesh = player:get_properties().mesh
+	local modeldata = modeldata[mesh]
 	if not modeldata then
 		return
 	end
+	local conf = conf.models[mesh] or conf
 	local name = player:get_player_name()
 	local range, frame_speed, frame_blend, frame_loop = player:get_animation()
 	disable_animation(player)
