@@ -1,10 +1,4 @@
-local modeldata_path = modlib.mod.get_resource"modeldata.lua"
-if not modlib.file.exists(modeldata_path) then
-	modeldata = {}
-	assert(import_model("character.b3d"))
-else
-	modeldata = minetest.deserialize(modlib.file.read(modeldata_path))
-end
+modeldata = minetest.deserialize(modlib.file.read(modlib.mod.get_resource"modeldata.lua"))
 
 function linear_interpolation(vector, other_vector, ratio)
 	return modlib.vector.add(modlib.vector.multiply_scalar(vector, ratio), modlib.vector.multiply_scalar(other_vector, 1 - ratio))

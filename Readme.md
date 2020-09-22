@@ -32,7 +32,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib) and [`cmdlib`](https:
 
 0. If you want to use a custom model, install [`binarystream`](https://luarocks.org/modules/Tarik02/binarystream) from LuaRocks:
    1. `sudo luarocks install binarystream` on many UNIX-systems
-   2. Add `player_animations` to `secure.trusted_mods` (or disable mod security)
+   2. Add `player_animations` to `secure.trusted_mods` (or disable mod security). **Make sure you trust all your mods, as it is possible to obtain an insecure environment for all of them!** Ideally import models with all other mods disabled.
    3. Export the model as `glTF` and save it under `models/modelname.extension.gltf`
-   4. Do `/ca import modelname.extension`
+   4. Do `/ca_import modelname.extension`
 1. Install and use `character_anim` like any other mod

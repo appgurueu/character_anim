@@ -1,5 +1,6 @@
--- TODO use minetest.request_insecure_environment()
-local BinaryStream = require("binarystream")
+local BinaryStream = insecure_environment.require"binarystream"
+insecure_environment = nil
+if not BinaryStream then return end
 
 local data_uri_start = "data:application/octet-stream;base64,"
 function read_bonedata(path)
@@ -146,13 +147,12 @@ function import_model(filename)
     return true
 end
 
-cmdlib.register_chatcommand("ca import", {
+minetest.register_chatcommand("ca_import", {
     params = "<filename>",
     description = "Imports a model for use with character_anim",
     privs = {server = true},
-    func = function(_, params)
-        local filename = params.filename
+    func = function(_, filename)
         local success = import_model(filename)
-        return success, success and "Model " .. filename .. " imported successfully" or "File "..filename.." does not exist"
+        return success, (success and "Model %s imported successfully" or "File %s does not exist"):format(filename)
     end
 })
