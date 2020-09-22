@@ -179,24 +179,22 @@ local function handle_player_animations(dtime, player)
 	end
 	local lag_behind = diff - moving_diff
 	local attach_parent, _, _, attach_rotation = player:get_attach()
-	if not (attach_parent or player_api.player_attached[name]) then
+	if attach_parent and attach_parent:get_rotation() and attach_rotation then
+		local total_rotation = normalize_rotation(vector.add(attach_rotation, vector.apply(attach_parent:get_rotation(), math.deg)))
+
+		local function rotate_relative(euler_rotation)
+			-- HACK +180
+			euler_rotation.y = euler_rotation.y + look_horizontal + 180
+			local new_rotation = normalize_rotation(vector.add(euler_rotation, total_rotation))
+			euler_rotation.x, euler_rotation.y, euler_rotation.z = new_rotation.x, new_rotation.y, new_rotation.z
+		end
+
+		rotate_relative(Head)
+		if interacting then rotate_relative(Arm_Right) end
+	elseif not player_api.player_attached[name] then
 		Body.y = Body.y - lag_behind
 		Head.y = Head.y + lag_behind
 		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
-	else
-		if attach_parent then
-			local total_rotation = normalize_rotation(vector.add(attach_rotation, vector.apply(attach_parent:get_rotation(), math.deg)))
-
-			local function rotate_relative(euler_rotation)
-				-- HACK +180
-				euler_rotation.y = euler_rotation.y + look_horizontal + 180
-				local new_rotation = normalize_rotation(vector.add(euler_rotation, total_rotation))
-				euler_rotation.x, euler_rotation.y, euler_rotation.z = new_rotation.x, new_rotation.y, new_rotation.z
-			end
-
-			rotate_relative(Head)
-			if interacting then rotate_relative(Arm_Right) end
-		end
 	end
 
 	Head.x = clamp(Head.x, unpack(conf.head.pitch))
