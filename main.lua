@@ -80,25 +80,9 @@ local function clamp(value, min, max)
 end
 
 local function normalize_rotation(euler_rotation)
-	return vector.apply(euler_rotation, function(x) return (x % 360) - 180 end)
+	return vector.apply(euler_rotation, function(x) return ((x + 180) % 360) - 180 end)
 end
 
---[[local conf = {
-	body = {
-		turn_speed = 1/5
-	},
-	head = {
-		pitch = {-60, 80},
-		yaw = {-90, 90},
-		yaw_restricted = {0, 45},
-		yaw_restriction = 60
-	},
-	arm_right = {
-		radius = 10,
-		speed = 1000,
-		yaw = {-30, 160}
-	}
-}]]
 local function handle_player_animations(dtime, player)
 	local mesh = player:get_properties().mesh
 	local modeldata = modeldata[mesh]
@@ -179,18 +163,22 @@ local function handle_player_animations(dtime, player)
 	end
 	local lag_behind = diff - moving_diff
 	local attach_parent, _, _, attach_rotation = player:get_attach()
-	if attach_parent and attach_parent:get_rotation() and attach_rotation then
-		local total_rotation = normalize_rotation(vector.add(attach_rotation, vector.apply(attach_parent:get_rotation(), math.deg)))
+	-- TODO properly handle set_eye_offset (should result in different look dir)
+	if attach_parent then
+		local parent_rotation = attach_parent:get_rotation()
+		if attach_rotation and parent_rotation then
+			local total_rotation = normalize_rotation(vector.add(attach_rotation, vector.apply(parent_rotation, math.deg)))
 
-		local function rotate_relative(euler_rotation)
-			-- HACK +180
-			euler_rotation.y = euler_rotation.y + look_horizontal + 180
-			local new_rotation = normalize_rotation(vector.add(euler_rotation, total_rotation))
-			euler_rotation.x, euler_rotation.y, euler_rotation.z = new_rotation.x, new_rotation.y, new_rotation.z
+			local function rotate_relative(euler_rotation)
+				-- HACK +180
+				euler_rotation.y = euler_rotation.y + look_horizontal + 180
+				local new_rotation = normalize_rotation(vector.add(euler_rotation, total_rotation))
+				euler_rotation.x, euler_rotation.y, euler_rotation.z = new_rotation.x, new_rotation.y, new_rotation.z
+			end
+
+			rotate_relative(Head)
+			if interacting then rotate_relative(Arm_Right) end
 		end
-
-		rotate_relative(Head)
-		if interacting then rotate_relative(Arm_Right) end
 	elseif not player_api.player_attached[name] then
 		Body.y = Body.y - lag_behind
 		Head.y = Head.y + lag_behind
