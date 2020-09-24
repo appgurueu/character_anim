@@ -1,4 +1,5 @@
-local BinaryStream = insecure_environment.require"binarystream"
+local BinaryStream
+pcall(function() BinaryStream = insecure_environment.require"binarystream" end)
 insecure_environment = nil
 if not BinaryStream then return end
 
