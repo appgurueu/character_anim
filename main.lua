@@ -106,7 +106,9 @@ local function handle_player_animations(dtime, player)
 	player_animation.animation_time = animation_time
 	local range_min, range_max = range.x + 1, range.y + 1
 	local keyframe
-	if frame_loop then
+	if range_min == range_max then
+		keyframe = range_min
+	elseif frame_loop then
 		keyframe = range_min + ((animation_time * frame_speed) % (range_max - range_min))
 	else
 		keyframe = math.min(range_max, range_min + animation_time * frame_speed)
