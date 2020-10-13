@@ -4,7 +4,7 @@ Animates the character. Resembles [`playeranim`](https://github.com/minetest-mod
 
 ## About
 
-Depends on [`modlib`](https://github.com/appgurueu/modlib) and [`cmdlib`](https://github.com/appgurueu/cmdlib). Code written by Lars Mueller aka LMD or appguru(eu) and licensed under the MIT license. Media (player model) was created by [MTG contributors](https://github.com/minetest/minetest_game/blob/master/mods/player_api/README.txt) (MirceaKitsune, stujones11 and An0n3m0us) and is licensed under the CC BY-SA 3.0 license.
+Depends on [`modlib`](https://github.com/appgurueu/modlib) and [`cmdlib`](https://github.com/appgurueu/cmdlib). Code written by Lars Mueller aka LMD or appguru(eu) and licensed under the MIT license. Media (player model) was created by [MTG contributors](https://github.com/minetest/minetest_game/blob/master/mods/player_api/README.txt) (MirceaKitsune, stujones11 and An0n3m0us) and is licensed under the CC BY-SA 3.0 license, as must be its derivatives (`skinsdb` and `3d_armor` variants).
 
 ## Screenshot
 
