@@ -10,12 +10,13 @@ function read_bonedata(path)
     for index, buffer in ipairs(gltf.buffers) do
         buffer = buffer.uri
         assert(modlib.text.starts_with(buffer, data_uri_start))
-        buffers[index] = minetest.decode_base64(buffer:sub((data_uri_start):len()+1))
+        -- Trim padding characters, see https://github.com/minetest/minetest/commit/f34abaedd2b9277c1862cd9b82ca3338747f104e
+        buffers[index] = assert(minetest.decode_base64(modlib.text.trim_right(buffer:sub((data_uri_start):len()+1), "=")) or nil, "base64 decoding failed, upgrade to Minetest 5.4 or newer")
     end
     local accessors = gltf.accessors
     local function read_accessor(accessor)
         local buffer_view = gltf.bufferViews[accessor.bufferView + 1]
-        buffer = buffers[buffer_view.buffer + 1]
+        local buffer = assert(buffers[buffer_view.buffer + 1])
         local binary_stream = BinaryStream(buffer, buffer:len())
         -- See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#animations
         local component_readers = {
