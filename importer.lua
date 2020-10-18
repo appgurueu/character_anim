@@ -24,16 +24,13 @@ function read_bonedata(path)
                 return math.max(binary_stream:readS8() / 127, -1)
             end,
             [5121] = function()
-                return math.max(binary_stream:readU8() / 255)
+                return binary_stream:readU8() / 255
             end,
             [5122] = function()
                 return math.max(binary_stream:readS16() / 32767, -1)
             end,
             [5123] = function()
-                return math.max(binary_stream:readU16() / 255)
-            end,
-            [5125] = function()
-                return math.max(binary_stream:readU8() / 255)
+                return binary_stream:readU16() / 65535
             end,
             [5126] = function()
                 return binary_stream:readF32()
