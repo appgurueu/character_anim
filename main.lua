@@ -53,22 +53,6 @@ local function disable_animation(player)
 	return player:set_animation({x = 0, y = 0}, 0, 0, false)
 end
 
-if player_api then
-	-- HACK eventually, player_api should be reimplemented
-	local set_animation = player_api.set_animation
-	player_api.set_animation = function(player, ...)
-		local player_animation = players[player:get_player_name()]
-		if not player_animation then
-			return
-		end
-		local ret = {set_animation(player, ...)}
-		local range, frame_speed, frame_blend, frame_loop = player:get_animation()
-		player_animation.animation = {range, frame_speed, frame_blend, frame_loop}
-		disable_animation(player)
-		return unpack(ret)
-	end
-end
-
 local function clamp(value, min, max)
 	if value > max then
 		return max
@@ -142,7 +126,6 @@ local function handle_player_animations(dtime, player)
 	local Body, Head, Arm_Right = bone_positions.Body.euler_rotation, bone_positions.Head.euler_rotation, bone_positions.Arm_Right.euler_rotation
 	local look_vertical = -math.deg(player:get_look_vertical())
 	Head.x = look_vertical
-	-- TODO sneak controlled animation speed (body turn, digging)
 	local interacting = is_interacting(player)
 	if interacting then
 		local interaction_time = player_animation.interaction_time
@@ -165,7 +148,7 @@ local function handle_player_animations(dtime, player)
 	end
 	local lag_behind = diff - moving_diff
 	local attach_parent, _, _, attach_rotation = player:get_attach()
-	-- TODO properly handle set_eye_offset (should result in different look dir)
+	-- TODO properly handle eye offset & height vs. actual head position
 	if attach_parent then
 		local parent_rotation = attach_parent:get_rotation()
 		if attach_rotation and parent_rotation then
@@ -198,6 +181,20 @@ local function handle_player_animations(dtime, player)
 		player:set_bone_position(bone, values.position, values.euler_rotation)
 	end
 	player_animation.bone_positions = bone_positions
+end
+
+if player_api then
+	-- TODO prevent player_api from using player:set_animation
+	local set_animation = player_api.set_animation
+	player_api.set_animation = function(player, ...)
+		local player_animation = players[player:get_player_name()]
+		if not player_animation then
+			return
+		end
+		local ret = {set_animation(player, ...)}
+		handle_player_animations(0, player)
+		return unpack(ret)
+	end
 end
 
 minetest.register_globalstep(function(dtime)
