@@ -17,7 +17,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 * [Minetest Forum](https://forum.minetest.net/viewtopic.php?f=9&t=25385) - (more organized) discussion
 * [ContentDB](https://content.minetest.net/packages/LMD/character_anim) - releases (cloning from GitHub is recommended)
 
-# Features
+## Features
 
 * Animates head, right arm & body
 * Advantages over `playeranim`:
@@ -28,7 +28,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
   * Head angles are clamped, head can tilt sideways
   * Animates right arm & body as well
 
-# Instructions
+## Instructions
 
 0. If you want to use a custom model, install [`binarystream`](https://luarocks.org/modules/Tarik02/binarystream) from LuaRocks:
    1. `sudo luarocks install binarystream` on many UNIX-systems
