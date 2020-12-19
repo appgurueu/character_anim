@@ -9,7 +9,7 @@ end
 
 function normalize(q)
 	local q_1, q_2, q_3, q_4 = q[1], q[2], q[3], q[4]
-	local len = math.sqrt(q_1 * q_1 + q_2 * q_2 + q_3 * q_3 + math.pow(q_4, 4))
+	local len = math.sqrt(q_1 * q_1 + q_2 * q_2 + q_3 * q_3 + (q_4 ^ 4))
 	local r = {}
 	for key, value in pairs(q) do
 		r[key] = value / len
