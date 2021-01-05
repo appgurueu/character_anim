@@ -1,5 +1,13 @@
 local BinaryStream
-pcall(function() BinaryStream = insecure_environment.require"binarystream" end)
+local previous_require = require
+_G.require = insecure_environment.require
+pcall(function()
+    -- Lua 5.1 compatibility
+    _G.bit = _G.bit or require"bit"
+    BinaryStream = require"binarystream"
+end)
+require = previous_require
+local io = insecure_environment.io
 insecure_environment = nil
 if not BinaryStream then return end
 
@@ -142,7 +150,9 @@ function import_model(filename)
         return false
     end
     modeldata[filename] = read_bonedata(path)
-    modlib.file.write(basepath .. "modeldata.lua", minetest.serialize(modeldata))
+    local file = io.open(basepath .. "modeldata.lua", "w")
+    file:write(minetest.serialize(modeldata))
+    file:close()
     return true
 end
 

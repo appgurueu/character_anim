@@ -32,7 +32,8 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 0. If you want to use a custom model, install [`binarystream`](https://luarocks.org/modules/Tarik02/binarystream) from LuaRocks:
    1. `sudo luarocks install binarystream` on many UNIX-systems
-   2. Disable mod security. **Make sure you trust all your mods! Ideally import models with all other mods disabled.**
-   3. Export the model as `glTF` and save it under `models/modelname.extension.gltf`
-   4. Do `/ca_import modelname.extension`
+   2. `sudo luarocks install luabitop` if you're not using LuaJIT
+   3. Disable mod security. **Make sure you trust all your mods! Ideally import models with all other mods disabled.**
+   4. Export the model as `glTF` and save it under `models/modelname.extension.gltf`
+   5. Do `/ca_import modelname.extension`
 1. Install and use `character_anim` like any other mod
