@@ -1,12 +1,12 @@
 local BinaryStream
 local previous_require = require
-_G.require = insecure_environment.require
+rawset(_G, "require", insecure_environment.require)
 pcall(function()
     -- Lua 5.1 compatibility
-    _G.bit = _G.bit or require"bit"
+    rawset(_G, "bit", rawget(_G, "bit") or require"bit")
     BinaryStream = require"binarystream"
 end)
-require = previous_require
+rawset(_G, "require", previous_require)
 local io = insecure_environment.io
 insecure_environment = nil
 if not BinaryStream then return end
