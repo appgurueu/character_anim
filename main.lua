@@ -1,9 +1,5 @@
 modeldata = minetest.deserialize(modlib.file.read(modlib.mod.get_resource"modeldata.lua"))
 
-function linear_interpolation(vector, other_vector, ratio)
-	return modlib.vector.add(modlib.vector.multiply_scalar(vector, ratio), modlib.vector.multiply_scalar(other_vector, 1 - ratio))
-end
-
 function get_animation_value(animation, keyframe_index, is_rotation)
 	local values = animation.values
 	assert(keyframe_index >= 1 and keyframe_index <= #values, keyframe_index)
@@ -17,7 +13,7 @@ function get_animation_value(animation, keyframe_index, is_rotation)
 	if is_rotation then
 		return quaternion.slerp(prev_value, next_value, ratio)
 	end
-	return modlib.vector.add(modlib.vector.multiply_scalar(prev_value, ratio), modlib.vector.multiply_scalar(next_value, 1 - ratio))
+	return modlib.vector.interpolate(prev_value, next_value, ratio)
 end
 
 function is_interacting(player)
@@ -117,9 +113,9 @@ local function handle_player_animations(dtime, player)
 			rotation[4] = -rotation[4]
 			local values = bone_positions[parent]
 			local absolute_rotation = quaternion.multiply(values.rotation, rotation)
-			euler_rotation = vector.subtract(quaternion.to_rotation(absolute_rotation), values.euler_rotation)
+			euler_rotation = vector.subtract(quaternion.to_euler_rotation(absolute_rotation), values.euler_rotation)
 		else
-			euler_rotation = quaternion.to_rotation(rotation)
+			euler_rotation = quaternion.to_euler_rotation(rotation)
 		end
 		bone_positions[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
