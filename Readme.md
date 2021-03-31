@@ -37,3 +37,131 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
    4. Export the model as `glTF` and save it under `models/modelname.extension.gltf`
    5. Do `/ca_import modelname.extension`
 1. Install and use `character_anim` like any other mod
+
+## Configuration
+
+<!--modlib:conf:2-->
+### `default`
+
+#### `arm_right`
+
+##### `radius`
+
+
+* Type: number
+* Default: `10`
+* &gt;= -180
+* &lt;= 180
+
+##### `speed`
+
+
+* Type: number
+* Default: `1000`
+* &gt; 0
+* &lt;= 10000
+
+##### `yaw`
+
+###### `max`
+
+
+* Type: number
+* Default: `160`
+* &gt;= -180
+* &lt;= 180
+
+###### `min`
+
+
+* Type: number
+* Default: `-30`
+* &gt;= -180
+* &lt;= 180
+
+
+
+#### `body`
+
+##### `turn_speed`
+
+
+* Type: number
+* Default: `0.2`
+* &gt; 0
+* &lt;= 1000
+
+
+#### `head`
+
+##### `pitch`
+
+###### `max`
+
+
+* Type: number
+* Default: `80`
+* &gt;= -180
+* &lt;= 180
+
+###### `min`
+
+
+* Type: number
+* Default: `-60`
+* &gt;= -180
+* &lt;= 180
+
+
+##### `yaw`
+
+###### `max`
+
+
+* Type: number
+* Default: `90`
+* &gt;= -180
+* &lt;= 180
+
+###### `min`
+
+
+* Type: number
+* Default: `-90`
+* &gt;= -180
+* &lt;= 180
+
+
+##### `yaw_restricted`
+
+###### `max`
+
+
+* Type: number
+* Default: `45`
+* &gt;= -180
+* &lt;= 180
+
+###### `min`
+
+
+* Type: number
+* Default: `0`
+* &gt;= -180
+* &lt;= 180
+
+
+##### `yaw_restriction`
+
+
+* Type: number
+* Default: `60`
+* &gt;= -180
+* &lt;= 180
+
+
+
+### `models`
+
+Other models, same format as `default` model
+<!--modlib:conf-->

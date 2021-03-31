@@ -53,12 +53,12 @@ local function disable_animation(player)
 	return player:set_animation({x = 0, y = 0}, 0, 0, false)
 end
 
-local function clamp(value, min, max)
-	if value > max then
-		return max
+local function clamp(value, range)
+	if value > range.max then
+		return range.max
 	end
-	if value < min then
-		return min
+	if value < range.min then
+		return range.min
 	end
 	return value
 end
@@ -170,12 +170,12 @@ local function handle_player_animations(dtime, player)
 		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
 	end
 
-	Head.x = clamp(Head.x, unpack(conf.head.pitch))
-	Head.y = clamp(Head.y, unpack(conf.head.yaw))
+	Head.x = clamp(Head.x, conf.head.pitch)
+	Head.y = clamp(Head.y, conf.head.yaw)
 	if math.abs(Head.y) > conf.head.yaw_restriction then
-		Head.x = clamp(Head.x, unpack(conf.head.yaw_restricted))
+		Head.x = clamp(Head.x, conf.head.yaw_restricted)
 	end
-	Arm_Right.y = clamp(Arm_Right.y, unpack(conf.arm_right.yaw))
+	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
 
 	for bone, values in pairs(bone_positions) do
 		player:set_bone_position(bone, values.position, values.euler_rotation)
