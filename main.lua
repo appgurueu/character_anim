@@ -1,9 +1,5 @@
 modeldata = minetest.deserialize(modlib.file.read(modlib.mod.get_resource"modeldata.lua"))
 
-function linear_interpolation(vector, other_vector, ratio)
-	return modlib.vector.add(modlib.vector.multiply_scalar(vector, ratio), modlib.vector.multiply_scalar(other_vector, 1 - ratio))
-end
-
 function get_animation_value(animation, keyframe_index, is_rotation)
 	local values = animation.values
 	assert(keyframe_index >= 1 and keyframe_index <= #values, keyframe_index)
@@ -17,7 +13,7 @@ function get_animation_value(animation, keyframe_index, is_rotation)
 	if is_rotation then
 		return quaternion.slerp(prev_value, next_value, ratio)
 	end
-	return modlib.vector.add(modlib.vector.multiply_scalar(prev_value, ratio), modlib.vector.multiply_scalar(next_value, 1 - ratio))
+	return modlib.vector.interpolate(prev_value, next_value, ratio)
 end
 
 function is_interacting(player)
@@ -53,18 +49,22 @@ local function disable_animation(player)
 	return player:set_animation({x = 0, y = 0}, 0, 0, false)
 end
 
-local function clamp(value, min, max)
-	if value > max then
-		return max
+local function clamp(value, range)
+	if value > range.max then
+		return range.max
 	end
-	if value < min then
-		return min
+	if value < range.min then
+		return range.min
 	end
 	return value
 end
 
+local function normalize_angle(angle)
+	return ((angle + 180) % 360) - 180
+end
+
 local function normalize_rotation(euler_rotation)
-	return vector.apply(euler_rotation, function(x) return ((x + 180) % 360) - 180 end)
+	return vector.apply(euler_rotation, normalize_angle)
 end
 
 local function handle_player_animations(dtime, player)
@@ -117,9 +117,9 @@ local function handle_player_animations(dtime, player)
 			rotation[4] = -rotation[4]
 			local values = bone_positions[parent]
 			local absolute_rotation = quaternion.multiply(values.rotation, rotation)
-			euler_rotation = vector.subtract(quaternion.to_rotation(absolute_rotation), values.euler_rotation)
+			euler_rotation = vector.subtract(quaternion.to_euler_rotation(absolute_rotation), values.euler_rotation)
 		else
-			euler_rotation = quaternion.to_rotation(rotation)
+			euler_rotation = quaternion.to_euler_rotation(rotation)
 		end
 		bone_positions[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
@@ -152,13 +152,13 @@ local function handle_player_animations(dtime, player)
 	if attach_parent then
 		local parent_rotation = attach_parent:get_rotation()
 		if attach_rotation and parent_rotation then
-			local total_rotation = normalize_rotation(vector.add(attach_rotation, vector.apply(parent_rotation, math.deg)))
-
+			parent_rotation = vector.apply(parent_rotation, math.deg)
+			local total_rotation = normalize_rotation(vector.subtract(parent_rotation, attach_rotation))
 			local function rotate_relative(euler_rotation)
 				-- HACK +180
 				euler_rotation.y = euler_rotation.y + look_horizontal + 180
 				local new_rotation = normalize_rotation(vector.add(euler_rotation, total_rotation))
-				euler_rotation.x, euler_rotation.y, euler_rotation.z = new_rotation.x, new_rotation.y, new_rotation.z
+				modlib.table.add_all(euler_rotation, new_rotation)
 			end
 
 			rotate_relative(Head)
@@ -170,12 +170,16 @@ local function handle_player_animations(dtime, player)
 		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
 	end
 
-	Head.x = clamp(Head.x, unpack(conf.head.pitch))
-	Head.y = clamp(Head.y, unpack(conf.head.yaw))
+	-- HACK assumes that Body is root & parent bone of Head, only takes rotation around X-axis into consideration
+	Head.x = normalize_angle(Head.x + Body.x)
+	if interacting then Arm_Right.x = normalize_angle(Arm_Right.x + Body.x) end
+
+	Head.x = clamp(Head.x, conf.head.pitch)
+	Head.y = clamp(Head.y, conf.head.yaw)
 	if math.abs(Head.y) > conf.head.yaw_restriction then
-		Head.x = clamp(Head.x, unpack(conf.head.yaw_restricted))
+		Head.x = clamp(Head.x, conf.head.yaw_restricted)
 	end
-	Arm_Right.y = clamp(Arm_Right.y, unpack(conf.arm_right.yaw))
+	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
 
 	for bone, values in pairs(bone_positions) do
 		player:set_bone_position(bone, values.position, values.euler_rotation)
