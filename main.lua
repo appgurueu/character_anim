@@ -59,8 +59,12 @@ local function clamp(value, range)
 	return value
 end
 
+local function normalize_angle(angle)
+	return ((angle + 180) % 360) - 180
+end
+
 local function normalize_rotation(euler_rotation)
-	return vector.apply(euler_rotation, function(x) return ((x + 180) % 360) - 180 end)
+	return vector.apply(euler_rotation, normalize_angle)
 end
 
 local function handle_player_animations(dtime, player)
@@ -165,6 +169,10 @@ local function handle_player_animations(dtime, player)
 		Head.y = Head.y + lag_behind
 		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
 	end
+
+	-- HACK assumes that Body is root & parent bone of Head, only takes rotation around X-axis into consideration
+	Head.x = normalize_angle(Head.x + Body.x)
+	if interacting then Arm_Right.x = normalize_angle(Arm_Right.x + Body.x) end
 
 	Head.x = clamp(Head.x, conf.head.pitch)
 	Head.y = clamp(Head.y, conf.head.yaw)
