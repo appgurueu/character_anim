@@ -1,4 +1,11 @@
-modeldata = minetest.deserialize(modlib.file.read(modlib.mod.get_resource"modeldata.lua"))
+local models = {}
+for _, model in ipairs(minetest.get_dir_list(modlib.mod.get_resource"models", false)) do
+	if modlib.text.ends_with(model, ".b3d") then
+		local stream = io.open(modlib.mod.get_resource(minetest.get_current_modname(), "models", model), "r")
+		models[model] = modlib.b3d.read(stream)
+		assert(stream:read() == nil)
+	end
+end
 
 function get_animation_value(animation, keyframe_index, is_rotation)
 	local values = animation.values
@@ -69,8 +76,8 @@ end
 
 local function handle_player_animations(dtime, player)
 	local mesh = player:get_properties().mesh
-	local modeldata = modeldata[mesh]
-	if not modeldata then
+	local model = models[mesh]
+	if not model then
 		return
 	end
 	local conf = conf.models[mesh] or conf.default
@@ -98,23 +105,14 @@ local function handle_player_animations(dtime, player)
 		keyframe = math.min(range_max, range_min + animation_time * frame_speed)
 	end
 	local bone_positions = {}
-	for _, bone in ipairs(modeldata.order) do
-		local animation = modeldata.animations_by_nodename[bone]
-		local position, rotation = animation.default_translation, animation.default_rotation
-		if animation.translation then
-			position = get_animation_value(animation.translation, keyframe)
-		end
-		position = {x = -position.x, y = position.y, z = -position.z}
-		if animation.rotation then
-			-- rotation override instead of additional rotation (quaternion.multiply(animated_rotation, rotation))
-			rotation = get_animation_value(animation.rotation, keyframe, true)
-		end
-		rotation = {unpack(rotation)}
-		rotation[1] = -rotation[1]
+	for _, props in ipairs(model:get_animated_bone_properties(keyframe, true)) do
+		local bone = props.bone_name
+		local position, rotation = modlib.vector.to_minetest(props.position), props.rotation
+		-- HACK
+		rotation = {rotation[3], rotation[4], -rotation[1], rotation[2]}
 		local euler_rotation
-		local parent = animation.parent
+		local parent = props.parent_bone_name
 		if parent then
-			rotation[4] = -rotation[4]
 			local values = bone_positions[parent]
 			local absolute_rotation = quaternion.multiply(values.rotation, rotation)
 			euler_rotation = vector.subtract(quaternion.to_euler_rotation(absolute_rotation), values.euler_rotation)
@@ -130,7 +128,7 @@ local function handle_player_animations(dtime, player)
 	if interacting then
 		local interaction_time = player_animation.interaction_time
 		-- note: +90 instead +Arm_Right.x because it looks better
-		Arm_Right.x = 90 + look_vertical - math.sin(-interaction_time) * conf.arm_right.radius
+		Arm_Right.x = 90 - look_vertical - math.sin(-interaction_time) * conf.arm_right.radius
 		Arm_Right.y = Arm_Right.y + math.cos(-interaction_time) * conf.arm_right.radius
 		player_animation.interaction_time = interaction_time + dtime * math.rad(conf.arm_right.speed)
 	else
@@ -172,10 +170,12 @@ local function handle_player_animations(dtime, player)
 
 	-- HACK assumes that Body is root & parent bone of Head, only takes rotation around X-axis into consideration
 	Head.x = normalize_angle(Head.x + Body.x)
-	if interacting then Arm_Right.x = normalize_angle(Arm_Right.x + Body.x) end
+	if interacting then Arm_Right.x = normalize_angle(Arm_Right.x - Body.x) end
 
 	Head.x = clamp(Head.x, conf.head.pitch)
 	Head.y = clamp(Head.y, conf.head.yaw)
+	-- HACK
+	Head.z = Head.z + 180
 	if math.abs(Head.y) > conf.head.yaw_restriction then
 		Head.x = clamp(Head.x, conf.head.yaw_restricted)
 	end
