@@ -1,11 +1,19 @@
-local models = {}
-for _, model in ipairs(minetest.get_dir_list(modlib.mod.get_resource"models", false)) do
-	if modlib.text.ends_with(model, ".b3d") then
-		local stream = io.open(modlib.mod.get_resource(minetest.get_current_modname(), "models", model), "r")
-		models[model] = modlib.b3d.read(stream)
-		assert(stream:read() == nil)
+-- TODO deduplicate code: move to modlib (see ghosts mod)
+local media_paths = modlib.minetest.media.paths
+local models = setmetatable({}, {__index = function(self, filename)
+	local _, ext = modlib.file.get_extension(filename)
+	if not ext or ext:lower() ~= "b3d" then
+		-- Only B3D support currently
+		return
 	end
-end
+	local path = assert(media_paths[filename], filename)
+	local stream = io.open(path, "r")
+	local model = assert(modlib.b3d.read(stream))
+	assert(not stream:read(1))
+	stream:close()
+	self[filename] = model
+	return model
+end})
 
 function get_animation_value(animation, keyframe_index, is_rotation)
 	local values = animation.values
@@ -83,7 +91,6 @@ local function handle_player_animations(dtime, player)
 	local conf = conf.models[mesh] or conf.default
 	local name = player:get_player_name()
 	local range, frame_speed, frame_blend, frame_loop = player:get_animation()
-	disable_animation(player)
 	local player_animation = players[name]
 	local anim = {range, frame_speed, frame_blend, frame_loop}
 	local animation_time = player_animation.animation_time
@@ -122,6 +129,10 @@ local function handle_player_animations(dtime, player)
 		bone_positions[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
 	local Body, Head, Arm_Right = bone_positions.Body.euler_rotation, bone_positions.Head.euler_rotation, bone_positions.Arm_Right.euler_rotation
+	if not (Body and Head and Arm_Right) then
+		-- Model is missing some bones, don't animate serverside
+		return
+	end
 	local look_vertical = -math.deg(player:get_look_vertical())
 	Head.x = look_vertical
 	local interacting = is_interacting(player)
@@ -181,6 +192,8 @@ local function handle_player_animations(dtime, player)
 	end
 	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
 
+	-- Replace animation with serverside bone animation
+	disable_animation(player)
 	for bone, values in pairs(bone_positions) do
 		player:set_bone_position(bone, values.position, values.euler_rotation)
 	end
