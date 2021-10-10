@@ -168,3 +168,16 @@ Head yaw restriction
 
 Other models, same format as `default` model
 <!--modlib:conf-->
+
+## API
+
+Minetest's `player:set_bone_position` is overridden so that it still works as expected.
+
+### `character_anim.set_bone_override(player, bonename, position, rotation)`
+
+The signature resembles that of `set_bone_position`. `bonename` must be a string. The following additional features are provided:
+
+* Using it like `set_bone_position` by setting `rotation` and `position` to non-`nil` values and using `""` to set the root bone
+* *Setting only the bone position* by setting `rotation` to `nil` - bone rotation will then be model-animation-determined
+* *Setting only the bone rotation* by setting `position` to `nil` - bone position will then be model-animation-determined
+* *Clearing the override* by setting both `rotation` and `position` to `nil` ("unset_bone_position")
