@@ -38,6 +38,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ##### `radius`
 
+Right arm spin radius
 
 * Type: number
 * Default: `10`
@@ -46,6 +47,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ##### `speed`
 
+Right arm spin speed
 
 * Type: number
 * Default: `1000`
@@ -56,6 +58,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `max`
 
+Right arm yaw (max)
 
 * Type: number
 * Default: `160`
@@ -64,6 +67,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `min`
 
+Right arm yaw (min)
 
 * Type: number
 * Default: `-30`
@@ -76,6 +80,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ##### `turn_speed`
 
+Body turn speed
 
 * Type: number
 * Default: `0.2`
@@ -89,6 +94,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `max`
 
+Head pitch (max)
 
 * Type: number
 * Default: `80`
@@ -97,6 +103,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `min`
 
+Head pitch (min)
 
 * Type: number
 * Default: `-60`
@@ -108,6 +115,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `max`
 
+Head yaw (max)
 
 * Type: number
 * Default: `90`
@@ -116,6 +124,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `min`
 
+Head yaw (min)
 
 * Type: number
 * Default: `-90`
@@ -127,6 +136,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `max`
 
+Head yaw restricted (max)
 
 * Type: number
 * Default: `45`
@@ -135,6 +145,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ###### `min`
 
+Head yaw restricted (min)
 
 * Type: number
 * Default: `0`
@@ -144,6 +155,7 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 
 ##### `yaw_restriction`
 
+Head yaw restriction
 
 * Type: number
 * Default: `60`
