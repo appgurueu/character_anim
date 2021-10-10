@@ -31,6 +31,18 @@ end
 
 players = {}
 
+function set_bone_override(player, bonename, position, rotation)
+	local name = player:get_player_name()
+	local value = {
+		position = position,
+		euler_rotation = rotation
+	}
+	-- TODO consider setting empty overrides to nil
+	players[name].bone_positions[bonename] = value
+end
+
+-- Raw PlayerRef.set_bone_position
+local set_bone_position
 minetest.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 	disable_local_animation(player)
@@ -41,6 +53,14 @@ minetest.register_on_joinplayer(function(player)
 		look_horizontal = get_look_horizontal(player),
 		bone_positions = {}
 	}
+	if not set_bone_position then
+		local PlayerRef = getmetatable(player)
+		set_bone_position = PlayerRef.set_bone_position
+		function PlayerRef:set_bone_position(bonename, position, rotation)
+			set_bone_override(self, bonename or "", position or {x = 0, y = 0, z = 0}, rotation or {x = 0, y = 0, z = 0})
+			return set_bone_position(self, bonename, position, rotation)
+		end
+	end
 end)
 
 minetest.register_on_leaveplayer(function(player) players[player:get_player_name()] = nil end)
@@ -182,9 +202,10 @@ local function handle_player_animations(dtime, player)
 	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
 
 	for bone, values in pairs(bone_positions) do
-		player:set_bone_position(bone, values.position, values.euler_rotation)
+		local overridden_values = player_animation.bone_positions[bone]
+		overridden_values = overridden_values or {}
+		set_bone_position(player, bone, overridden_values.position or values.position, overridden_values.euler_rotation or values.euler_rotation)
 	end
-	player_animation.bone_positions = bone_positions
 end
 
 if player_api then
