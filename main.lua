@@ -72,7 +72,9 @@ minetest.register_on_joinplayer(function(player)
 		local PlayerRef = getmetatable(player)
 		set_bone_position = PlayerRef.set_bone_position
 		function PlayerRef:set_bone_position(bonename, position, rotation)
-			set_bone_override(self, bonename or "", position or {x = 0, y = 0, z = 0}, rotation or {x = 0, y = 0, z = 0})
+			if self:is_player() then
+				set_bone_override(self, bonename or "", position or {x = 0, y = 0, z = 0}, rotation or {x = 0, y = 0, z = 0})
+			end
 			return set_bone_position(self, bonename, position, rotation)
 		end
 	end
