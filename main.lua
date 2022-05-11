@@ -235,11 +235,10 @@ function handle_player_animations(dtime, player)
 		local parent_rotation = attach_parent:get_rotation()
 		if attach_rotation and parent_rotation then
 			parent_rotation = vector.apply(parent_rotation, math.deg)
-			local total_rotation = normalize_rotation(vector.add(parent_rotation, attach_rotation))
+			local total_rotation = normalize_rotation(vector.subtract(attach_rotation, parent_rotation))
 			local function rotate_relative(euler_rotation)
-				-- HACK +180
-				euler_rotation.y = euler_rotation.y + look_horizontal + 180
-				local new_rotation = normalize_rotation(vector.add(euler_rotation, total_rotation))
+				euler_rotation.y = euler_rotation.y + look_horizontal + 180 -- HACK: +180
+				local new_rotation = normalize_rotation(vector.subtract(euler_rotation, total_rotation))
 				modlib.table.add_all(euler_rotation, new_rotation)
 			end
 
