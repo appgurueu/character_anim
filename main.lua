@@ -211,8 +211,8 @@ function handle_player_animations(dtime, player)
 	local interacting = is_interacting(player)
 	if interacting then
 		local interaction_time = player_animation.interaction_time
-		-- note: +90 instead +Arm_Right.x because it looks better
-		Arm_Right.x = 90 - look_vertical - math.sin(-interaction_time) * conf.arm_right.radius
+		-- Note: +90 instead of +Arm_Right.x because it looks better
+		Arm_Right.x = 90 + look_vertical - math.sin(-interaction_time) * conf.arm_right.radius
 		Arm_Right.y = Arm_Right.y + math.cos(-interaction_time) * conf.arm_right.radius
 		player_animation.interaction_time = interaction_time + dtime * math.rad(conf.arm_right.speed)
 	else
