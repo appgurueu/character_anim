@@ -264,7 +264,6 @@ function handle_player_animations(dtime, player)
 	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
 
 	-- Replace animation with serverside bone animation
-	disable_animation(player)
 	for bone, values in pairs(bone_positions) do
 		local overridden_values = player_animation.bone_positions[bone]
 		overridden_values = overridden_values or {}
