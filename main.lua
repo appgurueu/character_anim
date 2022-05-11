@@ -137,17 +137,9 @@ local function handle_player_animations(dtime, player)
 	for _, props in ipairs(model:get_animated_bone_properties(keyframe, true)) do
 		local bone = props.bone_name
 		local position, rotation = modlib.vector.to_minetest(props.position), props.rotation
-		-- HACK
-		rotation = {rotation[3], rotation[4], -rotation[1], rotation[2]}
-		local euler_rotation
-		local parent = props.parent_bone_name
-		if parent then
-			local values = bone_positions[parent]
-			local absolute_rotation = quaternion.multiply(values.rotation, rotation)
-			euler_rotation = vector.subtract(quaternion.to_euler_rotation(absolute_rotation), values.euler_rotation)
-		else
-			euler_rotation = quaternion.to_euler_rotation(rotation)
-		end
+		-- Fix the signs of X and Y to match Minetest
+		rotation = {-rotation[1], rotation[2], -rotation[3], rotation[4]}
+		local euler_rotation = quaternion.to_euler_rotation(rotation)
 		bone_positions[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
 	local Body, Head, Arm_Right = bone_positions.Body.euler_rotation, bone_positions.Head.euler_rotation, bone_positions.Arm_Right.euler_rotation
@@ -207,8 +199,6 @@ local function handle_player_animations(dtime, player)
 
 	Head.x = clamp(Head.x, conf.head.pitch)
 	Head.y = clamp(Head.y, conf.head.yaw)
-	-- HACK
-	Head.z = Head.z + 180
 	if math.abs(Head.y) > conf.head.yaw_restriction then
 		Head.x = clamp(Head.x, conf.head.yaw_restricted)
 	end
