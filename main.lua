@@ -21,10 +21,6 @@ function is_interacting(player)
 	return minetest.check_player_privs(player, "interact") and (control.RMB or control.LMB)
 end
 
-local function disable_local_animation(player)
-	return player:set_local_animation(nil, nil, nil, nil, 0)
-end
-
 local function get_look_horizontal(player)
 	return 180-math.deg(player:get_look_horizontal())
 end
@@ -41,20 +37,26 @@ function set_bone_override(player, bonename, position, rotation)
 	players[name].bone_positions[bonename] = value
 end
 
--- Raw PlayerRef.set_bone_position
-local set_bone_position
+local function nil_default(value, default)
+	if value == nil then return default end
+	return value
+end
+
+-- Forward declaration
+local handle_player_animations
+-- Raw PlayerRef methods
+local set_bone_position, set_animation, set_local_animation
 minetest.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
-	disable_local_animation(player)
 	players[name] = {
 		interaction_time = 0,
 		animation_time = 0,
-		animation = {},
 		look_horizontal = get_look_horizontal(player),
 		bone_positions = {}
 	}
 	if not set_bone_position then
 		local PlayerRef = getmetatable(player)
+
 		set_bone_position = PlayerRef.set_bone_position
 		function PlayerRef:set_bone_position(bonename, position, rotation)
 			if self:is_player() then
@@ -62,14 +64,73 @@ minetest.register_on_joinplayer(function(player)
 			end
 			return set_bone_position(self, bonename, position, rotation)
 		end
+
+		set_animation = PlayerRef.set_animation
+		function PlayerRef:set_animation(frame_range, frame_speed, frame_blend, frame_loop)
+			if not self:is_player() then
+				return set_animation(self, frame_range, frame_speed, frame_blend, frame_loop)
+			end
+			local player_animation = players[player:get_player_name()]
+			if not player_animation then
+				return
+			end
+			player_animation.animation = {
+				nil_default(frame_range, {x = 1, y = 1}),
+				nil_default(frame_speed, 15),
+				nil_default(frame_blend, 0),
+				nil_default(frame_loop, true)
+			}
+			player_animation.animation_time = 0
+			handle_player_animations(0, player)
+		end
+		local set_animation_frame_speed = PlayerRef.set_animation_frame_speed
+		function PlayerRef:set_animation_frame_speed(frame_speed)
+			if not self:is_player() then
+				return set_animation_frame_speed(self, frame_speed)
+			end
+			local player_animation = players[player:get_player_name()]
+			if not player_animation then
+				return
+			end
+			player_animation.animation[2] = frame_speed
+		end
+
+		local get_animation = PlayerRef.get_animation
+		function PlayerRef:get_animation()
+			if not self:is_player() then
+				return get_animation(self)
+			end
+			local anim = players[self:get_player_name()].animation
+			if anim then
+				return unpack(anim, 1, 4)
+			end
+			return get_animation(self)
+		end
+
+		set_local_animation = PlayerRef.set_local_animation
+		function PlayerRef:set_local_animation(idle, walk, dig, walk_while_dig, frame_speed)
+			if not self:is_player() then return set_local_animation(self) end
+			frame_speed = frame_speed or 30
+			players[self:get_player_name()].local_animation = {idle, walk, dig, walk_while_dig, frame_speed}
+		end
+		local get_local_animation = PlayerRef.get_local_animation
+		function PlayerRef:get_local_animation()
+			if not self:is_player() then return get_local_animation(self) end
+			local local_anim = players[self:get_player_name()].local_animation
+			if local_anim then
+				return unpack(local_anim, 1, 5)
+			end
+			return get_local_animation(self)
+		end
 	end
+
+	-- Disable animation & local animation
+	local no_anim = {x = 0, y = 0}
+	set_animation(player, no_anim, 0, 0, false)
+	set_local_animation(player, no_anim, no_anim, no_anim, no_anim, 1)
 end)
 
 minetest.register_on_leaveplayer(function(player) players[player:get_player_name()] = nil end)
-
-local function disable_animation(player)
-	return player:set_animation({x = 0, y = 0}, 0, 0, false)
-end
 
 local function clamp(value, range)
 	if value > range.max then
@@ -89,7 +150,7 @@ local function normalize_rotation(euler_rotation)
 	return vector.apply(euler_rotation, normalize_angle)
 end
 
-local function handle_player_animations(dtime, player)
+function handle_player_animations(dtime, player)
 	local mesh = player:get_properties().mesh
 	local modeldata = modeldata[mesh]
 	if not modeldata then
@@ -97,18 +158,15 @@ local function handle_player_animations(dtime, player)
 	end
 	local conf = conf.models[mesh] or conf.default
 	local name = player:get_player_name()
-	local range, frame_speed, frame_blend, frame_loop = player:get_animation()
-	disable_animation(player)
 	local player_animation = players[name]
-	local anim = {range, frame_speed, frame_blend, frame_loop}
-	local animation_time = player_animation.animation_time
-	if (range.x == 0 and range.y == 0 and frame_speed == 0 and frame_blend == 0 and frame_loop == false) or modlib.table.equals_noncircular(anim, player_animation.animation) then
-		range, frame_speed, frame_blend, frame_loop = unpack(player_animation.animation)
-		animation_time = animation_time + dtime
-	else
-		player_animation.animation = anim
-		animation_time = 0
+	local anim = player_animation.animation
+	if not anim then
+		return
 	end
+	local range, frame_speed, _, frame_loop = unpack(anim, 1, 4)
+	assert(range, dump(anim))
+	local animation_time = player_animation.animation_time
+	animation_time = animation_time + dtime
 	player_animation.animation_time = animation_time
 	local range_min, range_max = range.x + 1, range.y + 1
 	local keyframe
@@ -207,20 +265,6 @@ local function handle_player_animations(dtime, player)
 		local overridden_values = player_animation.bone_positions[bone]
 		overridden_values = overridden_values or {}
 		set_bone_position(player, bone, overridden_values.position or values.position, overridden_values.euler_rotation or values.euler_rotation)
-	end
-end
-
-if player_api then
-	-- TODO prevent player_api from using player:set_animation
-	local set_animation = player_api.set_animation
-	player_api.set_animation = function(player, ...)
-		local player_animation = players[player:get_player_name()]
-		if not player_animation then
-			return
-		end
-		local ret = {set_animation(player, ...)}
-		handle_player_animations(0, player)
-		return unpack(ret)
 	end
 end
 
