@@ -246,7 +246,7 @@ function handle_player_animations(dtime, player)
 			rotate_relative(Head)
 			if interacting then rotate_relative(Arm_Right) end
 		end
-	elseif not player_api.player_attached[name] then
+	elseif not modlib.table.nilget(rawget(_G, "player_api", "player_attached", name)) then
 		Body.y = Body.y - lag_behind
 		Head.y = Head.y + lag_behind
 		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
