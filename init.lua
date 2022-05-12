@@ -193,10 +193,7 @@ function handle_player_animations(dtime, player)
 		local euler_rotation = quaternion.to_euler_rotation(rotation)
 		bones[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
-	if not (bones.Body and bones.Head and bones.Arm_Right) then
-		-- Model is missing some bones, don't animate serverside
-		return
-	end
+	assert(bones.Body and bones.Head and bones.Arm_Right, "Player model is missing Body, Head or Arm_Right bones")
 	local Body, Head, Arm_Right = bones.Body.euler_rotation, bones.Head.euler_rotation, bones.Arm_Right.euler_rotation
 	local look_vertical = -math.deg(player:get_look_vertical())
 	Head.x = look_vertical
