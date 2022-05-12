@@ -1,3 +1,4 @@
+globals = {"character_anim"}
 read_globals = {
 	"modlib",
 	-- Minetest
