@@ -28,7 +28,7 @@ function character_anim.is_interacting(player)
 end
 
 local function get_look_horizontal(player)
-	return 180-math.deg(player:get_look_horizontal())
+	return -math.deg(player:get_look_horizontal())
 end
 
 local players = {}
@@ -230,7 +230,7 @@ function handle_player_animations(dtime, player)
 			parent_rotation = vector.apply(parent_rotation, math.deg)
 			local total_rotation = normalize_rotation(vector.subtract(attach_rotation, parent_rotation))
 			local function rotate_relative(euler_rotation)
-				euler_rotation.y = euler_rotation.y + look_horizontal + 180 -- HACK: +180
+				euler_rotation.y = euler_rotation.y + look_horizontal
 				local new_rotation = normalize_rotation(vector.subtract(euler_rotation, total_rotation))
 				modlib.table.add_all(euler_rotation, new_rotation)
 			end
