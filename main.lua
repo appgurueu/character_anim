@@ -180,7 +180,6 @@ function handle_player_animations(dtime, player)
 		return
 	end
 	local range, frame_speed, _, frame_loop = unpack(anim, 1, 4)
-	assert(range, dump(anim))
 	local animation_time = player_animation.animation_time
 	animation_time = animation_time + dtime
 	player_animation.animation_time = animation_time
