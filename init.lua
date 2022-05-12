@@ -82,25 +82,37 @@ minetest.register_on_joinplayer(function(player)
 			if not player_animation then
 				return
 			end
-			player_animation.animation = {
+			local prev_anim = player_animation.animation
+			local new_anim = {
 				nil_default(frame_range, {x = 1, y = 1}),
 				nil_default(frame_speed, 15),
 				nil_default(frame_blend, 0),
 				nil_default(frame_loop, true)
 			}
-			player_animation.animation_time = 0
-			handle_player_animations(0, player)
+			player_animation.animation = new_anim
+			if not prev_anim or (prev_anim[1].x ~= new_anim[1].x or prev_anim[1].y ~= new_anim[1].y) then
+				-- Reset animation only if the animation changed
+				player_animation.animation_time = 0
+				handle_player_animations(0, player)
+			elseif prev_anim[2] ~= new_anim[2] then
+				-- Adapt time to new speed
+				player_animation.animation_time = player_animation.animation_time * prev_anim[2] / new_anim[2]
+			end
 		end
 		local set_animation_frame_speed = PlayerRef.set_animation_frame_speed
 		function PlayerRef:set_animation_frame_speed(frame_speed)
 			if not self:is_player() then
 				return set_animation_frame_speed(self, frame_speed)
 			end
+			frame_speed = nil_default(frame_speed, 15)
 			local player_animation = players[player:get_player_name()]
 			if not player_animation then
 				return
 			end
+			local prev_speed = player_animation.animation[2]
 			player_animation.animation[2] = frame_speed
+			-- Adapt time to new speed
+			player_animation.animation_time = player_animation.animation_time * prev_speed / frame_speed
 		end
 
 		local get_animation = PlayerRef.get_animation
