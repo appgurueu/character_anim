@@ -34,13 +34,27 @@ end
 local players = {}
 character_anim.players = players
 
-function character_anim.set_bone_override(player, bonename, position, rotation)
+local function get_playerdata(player)
 	local name = player:get_player_name()
+	local data = players[name]
+	if data then return data end
+	-- Initialize playerdata if it doesn't already exist
+	data = {
+		interaction_time = 0,
+		animation_time = 0,
+		look_horizontal = get_look_horizontal(player),
+		bone_positions = {}
+	}
+	players[name] = data
+	return data
+end
+
+function character_anim.set_bone_override(player, bonename, position, rotation)
 	local value = {
 		position = position,
 		euler_rotation = rotation
 	}
-	players[name].bone_positions[bonename] = next(value) and value
+	get_playerdata(player).bone_positions[bonename] = next(value) and value
 end
 
 local function nil_default(value, default)
@@ -53,13 +67,7 @@ local handle_player_animations
 -- Raw PlayerRef methods
 local set_bone_position, set_animation, set_local_animation
 minetest.register_on_joinplayer(function(player)
-	local name = player:get_player_name()
-	players[name] = {
-		interaction_time = 0,
-		animation_time = 0,
-		look_horizontal = get_look_horizontal(player),
-		bone_positions = {}
-	}
+	get_playerdata(player) -- Initalizes playerdata if it isn't already initialized
 	if not set_bone_position then
 		local PlayerRef = getmetatable(player)
 
@@ -78,7 +86,7 @@ minetest.register_on_joinplayer(function(player)
 			if not self:is_player() then
 				return set_animation(self, frame_range, frame_speed, frame_blend, frame_loop)
 			end
-			local player_animation = players[player:get_player_name()]
+			local player_animation = get_playerdata(self)
 			if not player_animation then
 				return
 			end
@@ -105,7 +113,7 @@ minetest.register_on_joinplayer(function(player)
 				return set_animation_frame_speed(self, frame_speed)
 			end
 			frame_speed = nil_default(frame_speed, 15)
-			local player_animation = players[player:get_player_name()]
+			local player_animation = get_playerdata(self)
 			if not player_animation then
 				return
 			end
@@ -120,7 +128,7 @@ minetest.register_on_joinplayer(function(player)
 			if not self:is_player() then
 				return get_animation(self)
 			end
-			local anim = players[self:get_player_name()].animation
+			local anim = get_playerdata(self).animation
 			if anim then
 				return unpack(anim, 1, 4)
 			end
@@ -131,12 +139,12 @@ minetest.register_on_joinplayer(function(player)
 		function PlayerRef:set_local_animation(idle, walk, dig, walk_while_dig, frame_speed)
 			if not self:is_player() then return set_local_animation(self) end
 			frame_speed = frame_speed or 30
-			players[self:get_player_name()].local_animation = {idle, walk, dig, walk_while_dig, frame_speed}
+			get_playerdata(self).local_animation = {idle, walk, dig, walk_while_dig, frame_speed}
 		end
 		local get_local_animation = PlayerRef.get_local_animation
 		function PlayerRef:get_local_animation()
 			if not self:is_player() then return get_local_animation(self) end
-			local local_anim = players[self:get_player_name()].local_animation
+			local local_anim = get_playerdata(self).local_animation
 			if local_anim then
 				return unpack(local_anim, 1, 5)
 			end
@@ -177,8 +185,7 @@ function handle_player_animations(dtime, player)
 		return
 	end
 	local conf = character_anim.conf.models[mesh] or character_anim.conf.default
-	local name = player:get_player_name()
-	local player_animation = players[name]
+	local player_animation = get_playerdata(player)
 	local anim = player_animation.animation
 	if not anim then
 		return
@@ -245,7 +252,7 @@ function handle_player_animations(dtime, player)
 			rotate_relative(Head)
 			if interacting then rotate_relative(Arm_Right) end
 		end
-	elseif not modlib.table.nilget(rawget(_G, "player_api"), "player_attached", name) then
+	elseif not modlib.table.nilget(rawget(_G, "player_api"), "player_attached", player:get_player_name()) then
 		Body.y = Body.y - lag_behind
 		Head.y = Head.y + lag_behind
 		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
