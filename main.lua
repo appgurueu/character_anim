@@ -192,20 +192,20 @@ function handle_player_animations(dtime, player)
 	else
 		keyframe = math.min(range_max, range_min + animation_time * frame_speed)
 	end
-	local bone_positions = {}
+	local bones = {}
 	for _, props in ipairs(model:get_animated_bone_properties(keyframe, true)) do
 		local bone = props.bone_name
 		local position, rotation = modlib.vector.to_minetest(props.position), props.rotation
 		-- Fix the signs of X and Y to match Minetest
 		rotation = {-rotation[1], rotation[2], -rotation[3], rotation[4]}
 		local euler_rotation = quaternion.to_euler_rotation(rotation)
-		bone_positions[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
+		bones[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
-	local Body, Head, Arm_Right = bone_positions.Body.euler_rotation, bone_positions.Head.euler_rotation, bone_positions.Arm_Right.euler_rotation
-	if not (Body and Head and Arm_Right) then
+	if not (bones.Body and bones.Head and bones.Arm_Right) then
 		-- Model is missing some bones, don't animate serverside
 		return
 	end
+	local Body, Head, Arm_Right = bones.Body.euler_rotation, bones.Head.euler_rotation, bones.Arm_Right.euler_rotation
 	local look_vertical = -math.deg(player:get_look_vertical())
 	Head.x = look_vertical
 	local interacting = is_interacting(player)
@@ -263,10 +263,12 @@ function handle_player_animations(dtime, player)
 	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
 
 	-- Replace animation with serverside bone animation
-	for bone, values in pairs(bone_positions) do
+	for bone, values in pairs(bones) do
 		local overridden_values = player_animation.bone_positions[bone]
 		overridden_values = overridden_values or {}
-		set_bone_position(player, bone, overridden_values.position or values.position, overridden_values.euler_rotation or values.euler_rotation)
+		set_bone_position(player, bone,
+			overridden_values.position or values.position,
+			overridden_values.euler_rotation or values.euler_rotation)
 	end
 end
 
