@@ -14,7 +14,7 @@ local models = setmetatable({}, {__index = function(self, filename)
 		return
 	end
 	local path = assert(media_paths[filename], filename)
-	local stream = io.open(path, "r")
+	local stream = io.open(path, "rb")
 	local model = assert(modlib.b3d.read(stream))
 	assert(stream:read(1) == nil, "EOF expected")
 	stream:close()
