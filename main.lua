@@ -1,3 +1,6 @@
+local character_anim = getfenv(1)
+character_anim.conf = modlib.mod.configuration()
+
 local quaternion = modlib.quaternion
 -- TODO deduplicate code: move to modlib (see ghosts mod)
 local media_paths = modlib.minetest.media.paths
@@ -16,23 +19,7 @@ local models = setmetatable({}, {__index = function(self, filename)
 	return model
 end})
 
-function get_animation_value(animation, keyframe_index, is_rotation)
-	local values = animation.values
-	assert(keyframe_index >= 1 and keyframe_index <= #values, keyframe_index)
-	local ratio = keyframe_index % 1
-	if ratio == 0 then
-		return values[keyframe_index]
-	end
-	assert(ratio > 0 and ratio < 1)
-	local prev_value, next_value = values[math.floor(keyframe_index)], values[math.ceil(keyframe_index)]
-	assert(next_value)
-	if is_rotation then
-		return quaternion.slerp(prev_value, next_value, ratio)
-	end
-	return modlib.vector.interpolate(prev_value, next_value, ratio)
-end
-
-function is_interacting(player)
+function character_anim.is_interacting(player)
 	local control = player:get_player_control()
 	return minetest.check_player_privs(player, "interact") and (control.RMB or control.LMB)
 end
@@ -41,9 +28,10 @@ local function get_look_horizontal(player)
 	return 180-math.deg(player:get_look_horizontal())
 end
 
-players = {}
+local players = {}
+character_anim.players = players
 
-function set_bone_override(player, bonename, position, rotation)
+function character_anim.set_bone_override(player, bonename, position, rotation)
 	local name = player:get_player_name()
 	local value = {
 		position = position,
@@ -76,7 +64,9 @@ minetest.register_on_joinplayer(function(player)
 		set_bone_position = PlayerRef.set_bone_position
 		function PlayerRef:set_bone_position(bonename, position, rotation)
 			if self:is_player() then
-				set_bone_override(self, bonename or "", position or {x = 0, y = 0, z = 0}, rotation or {x = 0, y = 0, z = 0})
+				character_anim.set_bone_override(self, bonename or "",
+					position or {x = 0, y = 0, z = 0},
+					rotation or {x = 0, y = 0, z = 0})
 			end
 			return set_bone_position(self, bonename, position, rotation)
 		end
@@ -172,7 +162,7 @@ function handle_player_animations(dtime, player)
 	if not model then
 		return
 	end
-	local conf = conf.models[mesh] or conf.default
+	local conf = character_anim.conf.models[mesh] or character_anim.conf.default
 	local name = player:get_player_name()
 	local player_animation = players[name]
 	local anim = player_animation.animation
@@ -208,7 +198,7 @@ function handle_player_animations(dtime, player)
 	local Body, Head, Arm_Right = bones.Body.euler_rotation, bones.Head.euler_rotation, bones.Arm_Right.euler_rotation
 	local look_vertical = -math.deg(player:get_look_vertical())
 	Head.x = look_vertical
-	local interacting = is_interacting(player)
+	local interacting = character_anim.is_interacting(player)
 	if interacting then
 		local interaction_time = player_animation.interaction_time
 		-- Note: +90 instead of +Arm_Right.x because it looks better
