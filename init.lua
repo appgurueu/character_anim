@@ -40,8 +40,7 @@ function character_anim.set_bone_override(player, bonename, position, rotation)
 		position = position,
 		euler_rotation = rotation
 	}
-	-- TODO consider setting empty overrides to nil
-	players[name].bone_positions[bonename] = value
+	players[name].bone_positions[bonename] = next(value) and value
 end
 
 local function nil_default(value, default)
