@@ -1,7 +1,7 @@
 local function angle(description, default)
     return { type = "number", range = { min = -180, max = 180 }, description = description, default = default }
 end
-local function range(description, default_min, default_max)
+local range = function(description, default_min, default_max)
     return {
         type = "table",
         entries = {
