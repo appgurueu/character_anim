@@ -207,8 +207,8 @@ function handle_player_animations(dtime, player)
 	for _, props in ipairs(model:get_animated_bone_properties(keyframe, true)) do
 		local bone = props.bone_name
 		local position, rotation = modlib.vector.to_minetest(props.position), props.rotation
-		-- Fix the signs of X and Y to match Minetest
-		rotation = {-rotation[1], rotation[2], -rotation[3], rotation[4]}
+		-- Invert quaternion to match Minetest's coordinate system
+		rotation = {-rotation[1], -rotation[2], -rotation[3], rotation[4]}
 		local euler_rotation = quaternion.to_euler_rotation(rotation)
 		bones[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
