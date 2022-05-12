@@ -222,7 +222,6 @@ function handle_player_animations(dtime, player)
 	end
 	local lag_behind = diff - moving_diff
 	local attach_parent, _, _, attach_rotation = player:get_attach()
-	-- TODO properly handle eye offset & height vs. actual head position
 	if attach_parent then
 		local parent_rotation = attach_parent:get_rotation()
 		if attach_rotation and parent_rotation then
