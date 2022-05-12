@@ -1,3 +1,4 @@
+local quaternion = modlib.quaternion
 -- TODO deduplicate code: move to modlib (see ghosts mod)
 local media_paths = modlib.minetest.media.paths
 local models = setmetatable({}, {__index = function(self, filename)
