@@ -42,8 +42,8 @@ Right arm spin radius
 
 * Type: number
 * Default: `10`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 ##### `speed`
 
@@ -51,8 +51,8 @@ Right arm spin speed
 
 * Type: number
 * Default: `1000`
-* &gt; 0
-* &lt;= 10000
+* &gt; `0`
+* &lt;= `10000`
 
 ##### `yaw`
 
@@ -62,8 +62,8 @@ Right arm yaw (max)
 
 * Type: number
 * Default: `160`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 ###### `min`
 
@@ -71,8 +71,8 @@ Right arm yaw (min)
 
 * Type: number
 * Default: `-30`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 
 
@@ -84,8 +84,8 @@ Body turn speed
 
 * Type: number
 * Default: `0.2`
-* &gt; 0
-* &lt;= 1000
+* &gt; `0`
+* &lt;= `1000`
 
 
 #### `head`
@@ -98,8 +98,8 @@ Head pitch (max)
 
 * Type: number
 * Default: `80`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 ###### `min`
 
@@ -107,8 +107,8 @@ Head pitch (min)
 
 * Type: number
 * Default: `-60`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 
 ##### `yaw`
@@ -119,8 +119,8 @@ Head yaw (max)
 
 * Type: number
 * Default: `90`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 ###### `min`
 
@@ -128,8 +128,8 @@ Head yaw (min)
 
 * Type: number
 * Default: `-90`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 
 ##### `yaw_restricted`
@@ -140,8 +140,8 @@ Head yaw restricted (max)
 
 * Type: number
 * Default: `45`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 ###### `min`
 
@@ -149,8 +149,8 @@ Head yaw restricted (min)
 
 * Type: number
 * Default: `0`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 
 ##### `yaw_restriction`
@@ -159,8 +159,8 @@ Head yaw restriction
 
 * Type: number
 * Default: `60`
-* &gt;= -180
-* &lt;= 180
+* &gt;= `-180`
+* &lt;= `180`
 
 
 
