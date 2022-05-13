@@ -1,4 +1,4 @@
-assert(modlib.version >= 89, "character_anim requires at least version rolling-89 of modlib to function correctly")
+assert(modlib.version >= 93, "character_anim requires at least version rolling-93 of modlib")
 
 character_anim = {}
 
