@@ -59,7 +59,6 @@ return {
         models = {
             type = "table",
             keys = { type = "string" },
-            values = model,
             description = "Other models, same format as `default` model"
         }
     }
