@@ -239,7 +239,12 @@ function handle_player_animations(dtime, player)
 	local lag_behind = diff - moving_diff
 	local attach_parent, _, _, attach_rotation = player:get_attach()
 	if attach_parent then
-		local parent_rotation = attach_parent:get_rotation()
+		local parent_rotation
+		if attach_parent.get_rotation then
+			parent_rotation = attach_parent:get_rotation()
+		else -- 0.4.x doesn't have get_rotation(), only yaw
+			parent_rotation = {x = 0, y = attach_parent:get_yaw(), z = 0}
+		end
 		if attach_rotation and parent_rotation then
 			parent_rotation = vector.apply(parent_rotation, math.deg)
 			local total_rotation = normalize_rotation(vector.subtract(attach_rotation, parent_rotation))
