@@ -179,7 +179,13 @@ local function normalize_rotation(euler_rotation)
 end
 
 function handle_player_animations(dtime, player)
-	local mesh = player:get_properties().mesh
+	local props = player:get_properties()
+	if not props then
+		-- HACK inside on_joinplayer, the player object may be invalid
+		-- causing get_properties() to return nothing - just ignore this
+		return
+	end
+	local mesh = props.mesh
 	local model = models[mesh]
 	if not model then
 		return
