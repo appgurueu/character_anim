@@ -225,12 +225,13 @@ function handle_player_animations(dtime, player)
 		local euler_rotation = quaternion.to_euler_rotation(rotation)
 		bones[bone] = {position = position, rotation = rotation, euler_rotation = euler_rotation}
 	end
-	assert(bones.Body and bones.Head and bones.Arm_Right, "Player model is missing Body, Head or Arm_Right bones")
-	local Body, Head, Arm_Right = bones.Body.euler_rotation, bones.Head.euler_rotation, bones.Arm_Right.euler_rotation
+	local Body = (bones.Body or {}).euler_rotation
+	local Head = (bones.Head or {}).euler_rotation
+	local Arm_Right = (bones.Arm_Right or {}).euler_rotation
 	local look_vertical = -math.deg(player:get_look_vertical())
-	Head.x = look_vertical
+	if Head then Head.x = look_vertical end
 	local interacting = character_anim.is_interacting(player)
-	if interacting then
+	if interacting and Arm_Right then
 		local interaction_time = player_animation.interaction_time
 		-- Note: +90 instead of +Arm_Right.x because it looks better
 		Arm_Right.x = 90 + look_vertical - math.sin(-interaction_time) * conf.arm_right.radius
@@ -262,6 +263,7 @@ function handle_player_animations(dtime, player)
 			parent_rotation = vector.apply(parent_rotation, math.deg)
 			local total_rotation = normalize_rotation(vector.subtract(attach_rotation, parent_rotation))
 			local function rotate_relative(euler_rotation)
+				if not euler_rotation then return end
 				euler_rotation.y = euler_rotation.y + look_horizontal
 				local new_rotation = normalize_rotation(vector.subtract(euler_rotation, total_rotation))
 				modlib.table.add_all(euler_rotation, new_rotation)
@@ -270,22 +272,24 @@ function handle_player_animations(dtime, player)
 			rotate_relative(Head)
 			if interacting then rotate_relative(Arm_Right) end
 		end
-	elseif not modlib.table.nilget(rawget(_G, "player_api"), "player_attached", player:get_player_name()) then
+	elseif Body and not modlib.table.nilget(rawget(_G, "player_api"), "player_attached", player:get_player_name()) then
 		Body.y = Body.y - lag_behind
-		Head.y = Head.y + lag_behind
-		if interacting then Arm_Right.y = Arm_Right.y + lag_behind end
+		if Head then Head.y = Head.y + lag_behind end
+		if interacting and Arm_Right then Arm_Right.y = Arm_Right.y + lag_behind end
 	end
 
 	-- HACK assumes that Body is root & parent bone of Head, only takes rotation around X-axis into consideration
-	Head.x = normalize_angle(Head.x + Body.x)
-	if interacting then Arm_Right.x = normalize_angle(Arm_Right.x - Body.x) end
+	if Head then Head.x = normalize_angle(Head.x + Body.x) end
+	if interacting and Arm_Right then Arm_Right.x = normalize_angle(Arm_Right.x - Body.x) end
 
-	Head.x = clamp(Head.x, conf.head.pitch)
-	Head.y = clamp(Head.y, conf.head.yaw)
-	if math.abs(Head.y) > conf.head.yaw_restriction then
-		Head.x = clamp(Head.x, conf.head.yaw_restricted)
+	if Head then
+		Head.x = clamp(Head.x, conf.head.pitch)
+		Head.y = clamp(Head.y, conf.head.yaw)
+		if math.abs(Head.y) > conf.head.yaw_restriction then
+			Head.x = clamp(Head.x, conf.head.yaw_restricted)
+		end
 	end
-	Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw)
+	if Arm_Right then Arm_Right.y = clamp(Arm_Right.y, conf.arm_right.yaw) end
 
 	-- Replace animation with serverside bone animation
 	for bone, values in pairs(bones) do

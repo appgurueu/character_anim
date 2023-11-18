@@ -20,7 +20,8 @@ Depends on [`modlib`](https://github.com/appgurueu/modlib). Code written by Lars
 ## Features
 
 * Animates head, right arm & body
-* Also provides support for arbitrary player models, as long as `Head`, `Arm_Right` & `Body` bones exist
+* Support for arbitrary player models, as long as `Head`, `Arm_Right` & `Body` bones exist
+  * If any of these bones do not exist, it will still try to animate the remaining bones
 * Advantages over `playeranim`:
   * Extracts exact animations and bone positions from b3d models at runtime (no complex installation)
   * Also animates attached players (with restrictions on angles)
